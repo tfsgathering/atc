@@ -10,6 +10,7 @@ intents.message_content = True
 
 bot = commands.Bot(command_prefix=".", intents=intents)
 bot.logchannel = 1175377575485378570
+bot.apixkey = os.getenv("X-ENV-KEY")
 
 @bot.event
 async def on_ready():
@@ -20,7 +21,7 @@ async def load_cogs():
     cogs_dir = os.path.join(os.path.dirname(__file__), "cogs")
     for filename in os.listdir(cogs_dir):
         if filename.endswith(".py") and filename != "__init__.py":
-            cog_name = f"atc.cogs.{filename[:-3]}"
+            cog_name = f"cogs.{filename[:-3]}"
             try:
                 await bot.load_extension(cog_name)
                 print(f"Loaded cog: {cog_name}")

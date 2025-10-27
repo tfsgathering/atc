@@ -15,7 +15,7 @@ class Utility(commands.Cog):
         
         icao = icao.upper()
         url = f"https://api.checkwx.com/metar/{icao}/decoded"
-        headers = {"X-API-Key": "d1b8403e0efa41ba9ac187f959828570"}
+        headers = {"X-API-Key": self.bot.xapikey}
 
         async with aiohttp.ClientSession() as session:
             async with session.get(url, headers=headers) as resp:
