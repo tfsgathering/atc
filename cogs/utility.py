@@ -76,7 +76,7 @@ class Utility(commands.Cog):
             await interaction.response.send_message("Invalid input.", ephemeral=True)
             return
 
-        await interaction.response.send_message(" ".join(result))
+        await interaction.response.send_message("```\n" + " ".join(result) + "\n```")
 
     @app_commands.command(name="translate", description="Convert Morse to English")
     async def translate(self, interaction: discord.Interaction, code: str):
