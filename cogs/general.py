@@ -2,6 +2,8 @@ import discord
 from discord.ext import commands
 from discord import app_commands
 
+import random
+
 
 OUTCOMES = [
     (95, ":airplane_arriving: Butter. The passengers didn't even notice."),
@@ -18,8 +20,10 @@ class General(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
 
+    @app_commands.command(name="members", description="Server member count.")
     async def members(self, interaction: discord.Interaction):
 
+        guild = interaction.guild
         humans = sum(not m.bot for m in guild.members)
         bots = len(guild.members) - humans
         
@@ -40,10 +44,10 @@ class General(commands.Cog):
                 break
 
         await interaction.response.send_message(
-            f"`LANDING REPORT`\n" \
-            f"Vertical Speed {vs:,} ft/min, " \
-            f"crosswind {crosswind} kt, " \
-            f"and {bounces} {'bounce' if bounces == 1 else 'bounces'}.\n"
+            f"`LANDING REPORT`\n"
+            f"Vertical Speed {vs:,} ft/min, "
+            f"Crosswind {crosswind} kt, "
+            f"and {bounce} {'bounce' if bounce == 1 else 'bounces'}.\n"
             f"**Score:** {butter}/100\n\n"
             f"{outcome}"
         )
