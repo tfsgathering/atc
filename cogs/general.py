@@ -28,7 +28,7 @@ class General(commands.Cog):
         )
 
     @app_commands.command(name="landing", description="Attempt a landing.")
-    async def landing(interaction: discord.Interaction):
+    async def landing(self, interaction: discord.Interaction):
         butter = max(0, min(100, int(random.gauss(72, 22))))
         vs = -int(30 + (100 - butter) * 17 + random.randint(-40, 40))
         crosswind = random.randint(0, 35)
