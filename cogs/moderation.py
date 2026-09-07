@@ -3,23 +3,13 @@ from discord.ext import commands
 from discord import app_commands
 import datetime
 
-
-def nowtime():
-    return datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S UTC')
+from .helpers import send_log
 
 
 class Moderation(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
 
-    async def send_log(self, interaction: discord.Interaction, logmsg: str):
-        try:
-            log_channel = self.bot.get_channel(self.bot.logchannel)
-            if log_channel:
-                await log_channel.send(logmsg)
-        except Exception:
-            pass
-        
     @app_commands.command(name="nickname", description="Change or reset nickname")
     @app_commands.checks.has_permissions(manage_nicknames=True)
     async def nickname(self, interaction: discord.Interaction, member: discord.Member, name: str = None):
@@ -29,8 +19,11 @@ class Moderation(commands.Cog):
             msg = f"Changed **{member.name}**'s nickname to **{name}**." if name else f"Reset **{member.name}**'s nickname."
             await interaction.response.send_message(msg)
 
-            logmsg = f":pencil: `{nowtime()}`\n**{interaction.user}** changed **{member}**'s nickname to **{name or 'reset'}**."
-            await self.send_log(interaction, logmsg)
+            await send_log(
+                self.bot,
+                ":pencil:",
+                f"**{interaction.user}** changed **{member}**'s nickname to **{name or 'reset'}**."
+            )
 
         except Exception as e:
             await interaction.response.send_message(f"Error: {e}", ephemeral=True)
@@ -56,8 +49,11 @@ class Moderation(commands.Cog):
             await member.timeout(until, reason=reason)
             await interaction.response.send_message(f"Timed out **{member}** for {duration}")
 
-            logmsg = f":mute: `{nowtime()}`\n**{interaction.user}** timed out **{member}** for {duration}. Reason: {reason}"
-            await self.send_log(interaction, logmsg)
+            await send_log(
+                self.bot,
+                ":mute:",
+                f"**{interaction.user}** timed out **{member}** for {duration}. Reason: {reason}"
+            )
 
         except Exception as e:
             await interaction.response.send_message(f"Error: {e}", ephemeral=True)
@@ -71,8 +67,11 @@ class Moderation(commands.Cog):
             await member.kick(reason=reason)
             await interaction.response.send_message(f"Kicked **{member}**")
 
-            logmsg = f":boot: `{nowtime()}`\n**{interaction.user}** kicked **{member}**. Reason: {reason}"
-            await self.send_log(interaction, logmsg)
+            await send_log(
+                self.bot,
+                ":boot:",
+                f"**{interaction.user}** kicked **{member}**. Reason: {reason}"
+            )
 
         except Exception as e:
             await interaction.response.send_message(f"Error: {e}", ephemeral=True)
@@ -86,8 +85,11 @@ class Moderation(commands.Cog):
             await member.ban(reason=reason)
             await interaction.response.send_message(f"Banned **{member}**")
 
-            logmsg = f":hammer: `{nowtime()}`\n**{interaction.user}** banned **{member}**. Reason: {reason}"
-            await self.send_log(interaction, logmsg)
+            await send_log(
+                self.bot,
+                ":hammer:",
+                f"**{interaction.user}** banned **{member}**. Reason: {reason}"
+            )
 
         except Exception as e:
             await interaction.response.send_message(f"Error: {e}", ephemeral=True)
@@ -101,8 +103,11 @@ class Moderation(commands.Cog):
             await interaction.guild.unban(user, reason=reason)
             await interaction.response.send_message(f"Unbanned **{user}**")
 
-            logmsg = f":o: `{nowtime()}`\n**{interaction.user}** unbanned **{user}**. Reason: {reason}"
-            await self.send_log(interaction, logmsg)
+            await send_log(
+                self.bot,
+                ":o:",
+                f"**{interaction.user}** unbanned **{user}**. Reason: {reason}"
+            )
 
         except Exception as e:
             await interaction.response.send_message(f"Error: {e}", ephemeral=True)
@@ -120,10 +125,17 @@ class Moderation(commands.Cog):
 
         try:
             deleted = await interaction.channel.purge(limit=number)
-            await interaction.followup.send(f"Deleted {len(deleted)} messages", ephemeral=True)
 
-            logmsg = f":wastebasket: `{nowtime()}`\n**{interaction.user}** deleted {len(deleted)} messages in {interaction.channel.mention}"
-            await self.send_log(interaction, logmsg)
+            await interaction.followup.send(
+                f"Deleted {len(deleted)} messages",
+                ephemeral=True
+            )
+
+            await send_log(
+                self.bot,
+                ":wastebasket:",
+                f"**{interaction.user}** deleted {len(deleted)} messages in {interaction.channel.mention}"
+            )
 
         except Exception as e:
             await interaction.followup.send(f"Error: {e}", ephemeral=True)
@@ -137,14 +149,33 @@ class Moderation(commands.Cog):
 
             if perms.send_messages is False:
                 perms.send_messages = None
-                await channel.set_permissions(interaction.guild.default_role, overwrite=perms)
+                await channel.set_permissions(
+                    interaction.guild.default_role,
+                    overwrite=perms
+                )
+
                 await interaction.response.send_message(f"Unlocked {channel.mention}")
-                await self.send_log(interaction, f":unlock: `{nowtime()}`\n**{interaction.user}** unlocked {channel.mention}")
+
+                await send_log(
+                    self.bot,
+                    ":unlock:",
+                    f"**{interaction.user}** unlocked {channel.mention}"
+                )
+
             else:
                 perms.send_messages = False
-                await channel.set_permissions(interaction.guild.default_role, overwrite=perms)
+                await channel.set_permissions(
+                    interaction.guild.default_role,
+                    overwrite=perms
+                )
+
                 await interaction.response.send_message(f"Locked {channel.mention}")
-                await self.send_log(interaction, f":lock: `{nowtime()}`\n**{interaction.user}** locked {channel.mention}")
+
+                await send_log(
+                    self.bot,
+                    ":lock:",
+                    f"**{interaction.user}** locked {channel.mention}"
+                )
 
         except Exception as e:
             await interaction.response.send_message(f"Error: {e}", ephemeral=True)
