@@ -3,6 +3,8 @@ from discord.ext import commands
 from dotenv import load_dotenv
 import os
 
+from cogs.helpers import nowtime, send_log
+
 load_dotenv()
 
 intents = discord.Intents.default()
@@ -22,6 +24,21 @@ bot.apixkey = os.getenv("X-API-KEY")
 @bot.event
 async def on_ready():
     print(f"Logged in as {bot.user} with ID: {bot.user.id}")
+
+@bot.event
+async def on_member_remove(member):
+    async for entry in member.guild.audit_logs(
+        limit=5,
+        action=discord.AuditLogAction.kick
+    ):
+        if entry.target.id == member.id:
+            return
+
+    await send_log(
+        bot,
+        ":door:",
+        f"**{member}** left the server."
+    )
 
 
 async def load_cogs(bot):
